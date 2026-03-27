@@ -226,10 +226,10 @@ main() {
   install_system_deps
   install_homebrew
   install_ansible
-  #clone_repo
+  clone_repo
   prompt_host_setup
-  #ansible_galaxy_install
-  #run_playbook
+  ansible_galaxy_install
+  run_playbook
   logger INFO "Bootstrap complete"
   logger INFO "Log saved to ${LOG_FILE}"
 }
