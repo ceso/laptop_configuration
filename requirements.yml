@@ -1,0 +1,10 @@
+---
+collections:
+  - name: community.general
+    version: ">=9.0.0"
+
+roles:
+  - name: ceso.packages
+    src: https://github.com/ceso/ansible-role-packages.git
+  - name: ceso.dotfiles
+    src: https://github.com/ceso/ansible-role-dotfiles.git

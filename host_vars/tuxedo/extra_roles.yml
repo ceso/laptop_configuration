@@ -1,0 +1,5 @@
+extra_roles:
+  - role: gantsign.visual-studio-code
+    become: true
+    tags:
+      - vscode

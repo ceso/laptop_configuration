@@ -1,0 +1,78 @@
+extra_packages_repos:
+  - name: mullvad
+    Debian:
+      types: [deb]
+      uris: "https://repository.mullvad.net/deb/stable"
+      suites: [stable]
+      components: [main]
+      signed_by: "https://repository.mullvad.net/deb/mullvad-keyring.asc"
+    RedHat:
+      baseurl: "https://repository.mullvad.net/rpm/stable/$basearch"
+      gpgkey: "https://repository.mullvad.net/rpm/mullvad-keyring.asc"
+      gpgcheck: true
+  - name: 1password
+    Debian:
+      types: [deb]
+      uris: "https://downloads.1password.com/linux/debian/amd64"
+      suites: [stable]
+      components: [main]
+      signed_by: "https://downloads.1password.com/linux/keys/1password.asc"
+      replaces: "/etc/apt/sources.list.d/1password.list"
+    RedHat:
+      baseurl: "https://downloads.1password.com/linux/rpm/stable/$basearch"
+      gpgkey: "https://downloads.1password.com/linux/keys/1password.asc"
+      gpgcheck: true
+      repo_gpgcheck: true
+  - name: hashicorp
+    Debian:
+      types: [deb]
+      uris: "https://apt.releases.hashicorp.com"
+      suites: ["{{ ansible_facts['distribution_release'] }}"]
+      components: [main]
+      signed_by: "https://apt.releases.hashicorp.com/gpg"
+    RedHat:
+      baseurl: "https://rpm.releases.hashicorp.com/fedora/$releasever/$basearch/stable"
+      gpgkey: "https://rpm.releases.hashicorp.com/gpg"
+      gpgcheck: true
+  - name: tuxedo
+    Debian:
+      types: [deb]
+      uris: "https://deb.tuxedocomputers.com/{{ ansible_facts['distribution'] | lower }}"
+      suites: ["{{ ansible_facts['distribution_release'] }}"]
+      components: [main]
+      signed_by: "https://deb.tuxedocomputers.com/0x54840598.pub.asc"
+      replaces: "/etc/apt/sources.list.d/tuxedo-computers.sources"
+    RedHat:
+      url: "https://rpm.tuxedocomputers.com/fedora/tuxedo.repo"
+
+extra_packages_native:
+  - name: ktorrent
+  - name: 1password
+  - name: 1password-cli
+  - name: bleachbit
+  - name: calibre
+  - name: tuxedo-control-center
+  - name: tuxedo-tomte
+  - name: mullvad-vpn
+  - name: mullvad-browser
+  - name: vagrant
+
+extra_packages_homebrew:
+  - name: opentofu
+
+extra_packages_flatpak:
+  - name: com.discordapp.Discord
+  - name: org.telegram.desktop
+
+extra_packages_appimage:
+  - name: tuta
+    url: "https://app.tuta.com/desktop/tutanota-desktop-linux.AppImage"
+
+extra_packages_binary:
+  - name: winbox
+    url: "https://download.mikrotik.com/routeros/winbox/4.0.1/WinBox_Linux.zip"
+    binary: WinBox
+    desktop:
+      display_name: WinBox
+      comment: Configuration tool for RouterOS
+      categories: "Network;RemoteAccess;"

@@ -1,0 +1,29 @@
+---
+- name: Configure laptop
+  hosts: tuxedo
+
+  tasks:
+    - name: Include common roles
+      ansible.builtin.include_role:
+        name: "{{ item.role }}"
+        apply:
+          tags: "{{ item.tags | default([]) }}"
+      loop:
+        - role: ansible-role-packages
+          tags: packages
+        - role: ceso.dotfiles
+          tags: dotfiles
+      loop_control:
+        label: "{{ item.role }}"
+      tags: always
+
+    - name: Include host specific roles
+      ansible.builtin.include_role:
+        name: "{{ item.role }}"
+        apply:
+          become: "{{ item.become | default(false) }}"
+          tags: "{{ item.tags | default([]) }}"
+      loop: "{{ extra_roles | default([]) }}"
+      loop_control:
+        label: "{{ item.role }}"
+      when: extra_roles | length > 0
