@@ -1,5 +1,7 @@
-ansible_pkg_mgr: dnf
-
+# fix until PR
+# https://github.com/gantsign/ansible-role-visual-studio-code/pull/269
+# is closed
+vscode_ansible_pkg_mgr: dnf
 users:
   - username: ceso
     visual_studio_code_extensions:

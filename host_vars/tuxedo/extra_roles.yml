@@ -1,5 +1,7 @@
 extra_roles:
   - role: gantsign.visual-studio-code
+    vars:
+      ansible_pkg_mgr: "{{ vscode_ansible_pkg_mgr }}"
     become: true
     tags:
       - vscode
