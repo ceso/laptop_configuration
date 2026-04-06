@@ -15,7 +15,7 @@
           tags: dotfiles
       loop_control:
         label: "{{ item.role }}"
-      tags: always
+      tags: common-roles
 
     - name: Set extra role vars
       ansible.builtin.set_fact:
@@ -30,7 +30,7 @@
         loop_var: fact
         label: "{{ fact.key }}"
       when: extra_roles is defined and extra_roles | length > 0
-      tags: always
+      tags: extra-roles
 
     - name: Include host specific roles
       ansible.builtin.include_role:
@@ -42,4 +42,12 @@
       loop_control:
         label: "{{ item.role }}"
       when: extra_roles is defined and extra_roles | length > 0
-      tags: always
+      tags: extra-roles
+
+    - name: Run ghostty-installer.sh script
+      ansible.builtin.script:
+        cmd: "{{ ansible_facts['user_dir'] }}/.local/bin/ghostty-installer.sh"
+      register: ghostty_result
+      changed_when: "'already installed and current' not in ghostty_result.stderr"
+      tags: install-ghostty
+
