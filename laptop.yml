@@ -17,6 +17,21 @@
         label: "{{ item.role }}"
       tags: always
 
+    - name: Set extra role vars
+      ansible.builtin.set_fact:
+        "{{ fact.key }}": "{{ fact.value }}"
+      loop: >-
+        {{ extra_roles | default([])
+           | selectattr('vars', 'defined')
+           | map(attribute='vars')
+           | map('dict2items')
+           | flatten }}
+      loop_control:
+        loop_var: fact
+        label: "{{ fact.key }}"
+      when: extra_roles is defined and extra_roles | length > 0
+      tags: always
+
     - name: Include host specific roles
       ansible.builtin.include_role:
         name: "{{ item.role }}"
@@ -26,4 +41,5 @@
       loop: "{{ extra_roles | default([]) }}"
       loop_control:
         label: "{{ item.role }}"
-      when: extra_roles | length > 0
+      when: extra_roles is defined and extra_roles | length > 0
+      tags: always

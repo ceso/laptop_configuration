@@ -15,7 +15,7 @@ INVENTORY_FILE="inventory.ini"
 PLAYBOOK="laptop.yml"
 LAPTOP="tuxedo"
 LAPTOP_PROVIDED="false"
-LAPTOP_HOSTNAME="example.local"
+LAPTOP_HOSTNAME=""
 
 usage() {
   cat <<'EOF'
@@ -24,7 +24,7 @@ Usage: bash bootstrap.sh [OPTIONS]
 Options:
   --repo-dir <path>     Directory to clone the repo into (default: ~/Projects/laptop_configuration)
   --laptop <name>       Target laptop name (default: tuxedo)
-  --hostname <hostname> Hostname for the laptop (default: example.local)
+  --hostname <hostname> Hostname for the laptop (only set if provided)
   -h, --help            Show this help message
 EOF
   exit 0
@@ -248,8 +248,12 @@ main() {
   parse_args "$@"
   logger INFO "Starting laptop bootstrap"
   logger INFO "Repo directory: ${REPO_DIR}"
-  logger INFO "Setting laptop hostname to: ${LAPTOP_HOSTNAME}"
-  sudo hostnamectl set-hostname "${LAPTOP_HOSTNAME}"
+
+  if [[ -n "${LAPTOP_HOSTNAME}" ]]; then
+    logger INFO "Setting laptop hostname to: ${LAPTOP_HOSTNAME}"
+    sudo hostnamectl set-hostname "${LAPTOP_HOSTNAME}"
+  fi
+  
   install_system_deps
   install_uv
   install_ansible
