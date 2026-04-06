@@ -1,26 +1,31 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash
 # Bootstrap a fresh Linux laptop
 set -euo pipefail
 
 LOG_FILE="/tmp/bootstrap_$(date -u +"%Y_%m_%d").log"
-LAPTOP="tuxedo"
-LAPTOP_PROVIDED="false"
+REPO_DIR="${HOME}/Projects/laptop_configuration"
 REPO_URL="https://github.com/ceso/laptop_configuration.git"
 REPO_BRANCH="master"
-REPO_DIR="${HOME}/Projects/laptop_configuration"
 HOMEBREW_INSTALL_URL="https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
 HOMEBREW_BIN_PATH="/home/linuxbrew/.linuxbrew/bin"
+UV_INSTALL_URL="https://astral.sh/uv/install.sh"
+UV_BIN_PATH="${HOME}/.local/bin"
 INVENTORY_FILE="inventory.ini"
 PLAYBOOK="laptop.yml"
+LAPTOP="tuxedo"
+LAPTOP_PROVIDED="false"
+LAPTOP_HOSTNAME="example.local"
 
 usage() {
   cat <<'EOF'
 Usage: bash bootstrap.sh [OPTIONS]
 
 Options:
-  --repo-dir <path>   Directory to clone the repo into (default: ~/Projects/laptop_configuration)
-  --laptop <name>     Target laptop name (default: tuxedo)
-  -h, --help          Show this help message
+  --repo-dir <path>     Directory to clone the repo into (default: ~/Projects/laptop_configuration)
+  --laptop <name>       Target laptop name (default: tuxedo)
+  --hostname <hostname> Hostname for the laptop (default: example.local)
+  -h, --help            Show this help message
 EOF
   exit 0
 }
@@ -46,6 +51,14 @@ parse_args() {
         exit 1
       fi
       LAPTOP_PROVIDED=true
+      shift 2
+      ;;
+    --hostname)
+      LAPTOP_HOSTNAME="${2:-}"
+      if [[ -z "${LAPTOP_HOSTNAME}" ]]; then
+        echo "ERROR: --hostname requires a value" >&2
+        exit 1
+      fi
       shift 2
       ;;
     *)
@@ -141,8 +154,8 @@ clone_repo() {
 is_tool_installed() {
   local tool_bin_path="${1}"
 
-  if [[ -x "${HOMEBREW_BIN_PATH}/${tool_bin_path}" ]]; then
-    logger INFO "'${tool_bin_path}' already installed"
+  if [[ -x "${tool_bin_path}" ]]; then
+    logger INFO "'$(basename "${tool_bin_path}")' already installed"
     return 0
   fi
 
@@ -150,10 +163,10 @@ is_tool_installed() {
 }
 
 install_ansible() {
-  if is_tool_installed "ansible-playbook"; then return 0; fi
-  logger INFO "Installing Ansible via brew"
+  if is_tool_installed "${UV_BIN_PATH}/ansible-playbook"; then return 0; fi
+  logger INFO "Installing Ansible via uv"
   sleep 2
-  "${HOMEBREW_BIN_PATH}/brew" install -q ansible
+  "${UV_BIN_PATH}/uv" tool install -q ansible --with ansible-lint --with ansible-doctor
 }
 
 safe_run_remote_script() {
@@ -175,7 +188,11 @@ safe_run_remote_script() {
   case "${answer}" in
     [yY] | [yY][eE][sS])
       logger INFO "Executing ${script_name}"
-      ${bash_env_vars:+$bash_env_vars} /bin/bash "${tmpfile}"
+      if [[ -n "${bash_env_vars}" ]]; then
+        env "${bash_env_vars}" /bin/bash "${tmpfile}"
+      else
+        /bin/bash "${tmpfile}"
+      fi
       ;;
     *)
       rm -f "${tmpfile}"
@@ -187,9 +204,17 @@ safe_run_remote_script() {
 }
 
 install_homebrew() {
-  if is_tool_installed "brew"; then return 0; fi
+  if is_tool_installed "${HOMEBREW_BIN_PATH}/brew"; then return 0; fi
   safe_run_remote_script "${HOMEBREW_INSTALL_URL}" "Homebrew installer" "NONINTERACTIVE=1"
-  eval "$(${HOMEBREW_BIN_PATH}/brew shellenv)"
+  local brew_env
+  brew_env="$("${HOMEBREW_BIN_PATH}"/brew shellenv)"
+  eval "${brew_env}"
+}
+
+install_uv() {
+  if is_tool_installed "${UV_BIN_PATH}/uv"; then return 0; fi
+  safe_run_remote_script "${UV_INSTALL_URL}" "uv installer" "UV_INSTALL_DIR=${UV_BIN_PATH}"
+  export PATH="${UV_BIN_PATH}:${PATH}"
 }
 
 install_system_deps() {
@@ -197,7 +222,7 @@ install_system_deps() {
   sleep 2
 
   if [ -f /etc/os-release ]; then
-    # shellcheck source=/dev/null
+    # shellcheck source=/etc/os-release
     . /etc/os-release
     case "${ID_LIKE:-${ID}}" in
       *debian* | ubuntu)
@@ -223,9 +248,12 @@ main() {
   parse_args "$@"
   logger INFO "Starting laptop bootstrap"
   logger INFO "Repo directory: ${REPO_DIR}"
+  logger INFO "Setting laptop hostname to: ${LAPTOP_HOSTNAME}"
+  sudo hostnamectl set-hostname "${LAPTOP_HOSTNAME}"
   install_system_deps
-  install_homebrew
+  install_uv
   install_ansible
+  install_homebrew
   clone_repo
   prompt_host_setup
   ansible_galaxy_install

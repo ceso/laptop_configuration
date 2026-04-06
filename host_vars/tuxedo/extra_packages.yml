@@ -46,11 +46,9 @@ extra_packages_repos:
       url: "https://rpm.tuxedocomputers.com/fedora/tuxedo.repo"
 
 extra_packages_native:
-  - name: ktorrent
   - name: 1password
   - name: 1password-cli
   - name: bleachbit
-  - name: calibre
   - name: tuxedo-control-center
   - name: tuxedo-tomte
   - name: mullvad-vpn
@@ -61,8 +59,11 @@ extra_packages_homebrew:
   - name: opentofu
 
 extra_packages_flatpak:
+  - name: com.calibre_ebook.calibre
   - name: com.discordapp.Discord
+  - name: org.kde.ktorrent
   - name: org.telegram.desktop
+  - name: org.videolan.VLC
 
 extra_packages_appimage:
   - name: tuta
@@ -71,6 +72,7 @@ extra_packages_appimage:
 extra_packages_binary:
   - name: winbox
     url: "https://download.mikrotik.com/routeros/winbox/4.0.1/WinBox_Linux.zip"
+    checksum_url: "https://download.mikrotik.com/routeros/winbox/4.0.1/WinBox_Linux.zip.sha256"
     binary: WinBox
     desktop:
       display_name: WinBox

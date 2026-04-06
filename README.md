@@ -12,7 +12,8 @@ less bootstrap.sh
 bash bootstrap.sh
 ```
 
-The script will update the system, install system dependencies, Linuxbrew, Ansible & and clone this repo.
+The script will update the system, install system dependencies, uv (with it: ansible, ansible-lint & ansible-doctor), Linuxbrew, & and clone this repo.
+Then, the script will proceed to execute `laptop.yml`.
 If extra configurations roles and/or variables are needed beyond the ones in laptop.yml, a directory must be created under `host_vars/` with extras.
 
 ## Bootstrap flags
@@ -21,6 +22,7 @@ If extra configurations roles and/or variables are needed beyond the ones in lap
 |------|-------------|
 | `--repo-dir <path>` | Directory to clone the repo into (default: `~/Projects/laptop_configuration`) |
 | `--laptop <name>` | Target laptop name (default: `tuxedo`) |
+| `--hostname <hostname>` | Hostname to set for the laptop (default: `example.local`) |
 | `-h, --help` | Show help message |
 
 ## Laptop configuration example (extras)
@@ -29,10 +31,17 @@ Create a directory under `host_vars/` matching your laptop name (e.g., `host_var
 
 ### `host_vars/example-laptop/extra_packages.yml`
 ```yaml
-extra_packages:
-  - example-package-1
-  - example-package-2
-  - example-cli-tool
+extra_packages_native:
+  - name: example-package-1
+
+extra_packages_homebrew:
+  - name: example-cli-tool
+
+extra_packages_flatpak:
+  - name: com.example.App
+
+extra_packages_uv:
+  - name: example-python-tool
 ```
 
 ### `host_vars/example-laptop/extra_roles.yml`
@@ -61,7 +70,7 @@ roles:
 
 ## Requirements
 
-- Debian, Fedora/RHEL
+- Debian, Fedora/RHEL, openSUSE
 - `sudo` access
 - Internet connectivity
 
